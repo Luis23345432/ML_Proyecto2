@@ -580,3 +580,69 @@ print(tsne_test_predictions_df_3d.head())
 tsne_test_predictions_df_3d.to_csv("submission/tsne3d_gmm_test_predictions.csv", index=False)
 print("Test predictions using t-SNE 3D with GMM saved to 'submission/tsne3d_gmm_test_predictions.csv'.\n")
 
+import matplotlib
+matplotlib.use('TkAgg')
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+import numpy as np
+
+
+def plot_clustering(data, labels, title, is_3d=False):
+    """
+    Función para graficar los resultados del clustering.
+
+    Parameters:
+        data (numpy array): Puntos reducidos en 2D o 3D.
+        labels (numpy array): Etiquetas del clustering.
+        title (str): Título del gráfico.
+        is_3d (bool): Indica si la visualización es en 3D.
+    """
+    unique_labels = np.unique(labels)
+    cmap = plt.colormaps.get_cmap("tab10")  # Forma correcta en Matplotlib 3.7+
+
+    if is_3d:
+        fig = plt.figure(figsize=(10, 7))
+        ax = fig.add_subplot(111, projection='3d')
+        for i, label in enumerate(unique_labels):
+            mask = labels == label
+            ax.scatter(data[mask, 0], data[mask, 1], data[mask, 2], label=f"Cluster {label}",
+                       alpha=0.6, edgecolors='k', c=[cmap(i % 10)] * np.sum(mask))  # Se corrige 'c'
+        ax.set_xlabel("Component 1")
+        ax.set_ylabel("Component 2")
+        ax.set_zlabel("Component 3")
+    else:
+        plt.figure(figsize=(8, 6))
+        for i, label in enumerate(unique_labels):
+            mask = labels == label
+            plt.scatter(data[mask, 0], data[mask, 1], label=f"Cluster {label}",
+                        alpha=0.6, edgecolors='k', c=[cmap(i % 10)] * np.sum(mask))  # Se corrige 'c'
+        plt.xlabel("Component 1")
+        plt.ylabel("Component 2")
+
+    plt.title(title)
+    plt.legend()
+    plt.show()
+
+
+
+# Aplicar la función de visualización a todos los métodos de clustering
+
+# K-means++ con UMAP y t-SNE
+plot_clustering(umap_points, k_mU.assignment, "K-means++ con UMAP")
+plot_clustering(tsne_points, k_mT.assignment, "K-means++ con t-SNE")
+
+# DBSCAN con UMAP y t-SNE
+plot_clustering(umap_points, umap_labels, "DBSCAN con UMAP")
+plot_clustering(tsne_points, tsne_labels, "DBSCAN con t-SNE")
+
+# GMM con UMAP y t-SNE
+plot_clustering(umap_points, gmm_umap_labels, "GMM con UMAP")
+plot_clustering(tsne_points, gmm_tsne_labels, "GMM con t-SNE")
+
+# Visualización en 3D
+plot_clustering(umap3d_points, k_mU_3d.assignment, "K-means++ con UMAP 3D", is_3d=True)
+plot_clustering(tsne3d_points, k_mT_3d.assignment, "K-means++ con t-SNE 3D", is_3d=True)
+plot_clustering(umap3d_points, umap_labels_3d, "DBSCAN con UMAP 3D", is_3d=True)
+plot_clustering(tsne3d_points, tsne_labels_3d, "DBSCAN con t-SNE 3D", is_3d=True)
+plot_clustering(umap3d_points, gmm_umap_labels_3d, "GMM con UMAP 3D", is_3d=True)
+plot_clustering(tsne3d_points, gmm_tsne_labels_3d, "GMM con t-SNE 3D", is_3d=True)
